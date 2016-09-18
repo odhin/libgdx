@@ -402,6 +402,13 @@ public abstract class DynamicsModifier extends Influencer {
 
 		@Override
 		public void update () {
+			float cx = 0, cy = 0, cz = 0;
+			if (!isGlobal) {
+				float[] val = controller.transform.val;
+				cx = val[Matrix4.M03];
+				cy = val[Matrix4.M13];
+				cz = val[Matrix4.M23];
+			}
 			for (int i = 0, l = ParticleChannels.LifePercentOffset, s = 0, a = 0, positionOffset = 0, c = i
 				+ controller.particles.size * directionalVelocityChannel.strideSize; i < c; s += strengthChannel.strideSize, i += directionalVelocityChannel.strideSize, a += angularChannel.strideSize, l += lifeChannel.strideSize, positionOffset += positionChannel.strideSize) {
 
@@ -417,9 +424,10 @@ public abstract class DynamicsModifier extends Influencer {
 					.sinDeg(phi);
 				TMP_V3
 					.set(cosTheta * sinPhi, cosPhi, sinTheta * sinPhi)
-					.crs(positionChannel.data[positionOffset + ParticleChannels.XOffset],
-						positionChannel.data[positionOffset + ParticleChannels.YOffset],
-						positionChannel.data[positionOffset + ParticleChannels.ZOffset]).nor().scl(strength);
+					.crs(positionChannel.data[positionOffset + ParticleChannels.XOffset] - cx,
+						positionChannel.data[positionOffset + ParticleChannels.YOffset] - cy,
+						positionChannel.data[positionOffset + ParticleChannels.ZOffset] - cz)
+					.nor().scl(strength);
 				directionalVelocityChannel.data[i + ParticleChannels.XOffset] += TMP_V3.x;
 				directionalVelocityChannel.data[i + ParticleChannels.YOffset] += TMP_V3.y;
 				directionalVelocityChannel.data[i + ParticleChannels.ZOffset] += TMP_V3.z;
